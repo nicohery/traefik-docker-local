@@ -2,7 +2,7 @@ Traefik Docker local
 ====================
 ## Setting up a docker local development using `<whatever>.docker` as local domain without configuring host file
 
-This repository gives basic source code for setting up a local development environment using Docker, Traefik, Dnsmasq, and various Content Management Systems (CMS).
+This repository gives basic source code for setting up a local development environment using Docker, Traefik, Dnsmasq, and various Content Management Systems (CMS) such as PrestaShop, Kirby, and WordPress.
 
 ## Prerequisites
 
@@ -16,6 +16,6 @@ This repository gives basic source code for setting up a local development envir
 3. Run shell script `./create-certs.sh` to create SSL selfsigned certificates.
 4. Run shell script `./create-network.sh` to create a local network for Traefik.
 5. Run `docker compose up -d` to start the services.
-6. Go to your local CMS environment and add labels to your services in `docker-compose.override.yml` to enable Traefik to route traffic to your services.
+6. Go to your local CMS environment and add labels to your services in `docker-compose.override.yml` to enable Traefik to route traffic to your services (See `example/*/docker-compose.override.yml` for examples).
 7. Visit `https://myproject.docker` to see your local website.
 8. Run `docker compose down` to stop the services.
