@@ -1,0 +1,85 @@
+name: myproject
+
+services:
+  mysql:
+    image: mariadb:10.11
+    container_name: mysql-${COMPOSE_PROJECT_NAME}
+    hostname: mysql-${COMPOSE_PROJECT_NAME}
+    ports:
+      - "0:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWD:-prestashop}
+      MYSQL_DATABASE: ${DB_NAME:-prestashop}
+      MYSQL_USER: ${DB_USER:-prestashop}
+      MYSQL_PASSWORD: ${DB_PASSWD:-prestashop}
+    networks:
+      - local
+
+  keycloak:
+    container_name: keycloak-${COMPOSE_PROJECT_NAME}
+    networks:
+      - local
+
+  prestashop-git:
+    container_name: prestashop-${COMPOSE_PROJECT_NAME}
+    ports: !override []
+    environment:
+      PS_DOMAIN: dev.${COMPOSE_PROJECT_NAME}.docker
+      DB_SERVER: mysql-${COMPOSE_PROJECT_NAME}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`dev.${COMPOSE_PROJECT_NAME}.docker`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=web"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`dev.${COMPOSE_PROJECT_NAME}.docker`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=80"
+    networks:
+      - local
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-${COMPOSE_PROJECT_NAME}
+    restart: always
+    ports:
+      - "0:80"
+    environment:
+      PMA_HOST: mysql-${COMPOSE_PROJECT_NAME}
+      PMA_USER: ${DB_USER:-root}
+      PMA_PASSWORD: ${DB_PASSWD:-prestashop}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWD:-prestashop}
+    depends_on:
+      - mysql
+    networks:
+      - local
+
+  mysql-backup:
+    image: databack/mysql-backup
+    container_name: mysql-backup-${COMPOSE_PROJECT_NAME}
+    ports:
+      - "0:3456"
+    env_file: .env
+    environment:
+      - DB_SERVER=mysql-${COMPOSE_PROJECT_NAME}
+      - DB_USER=${DB_USER:-root}
+      - DB_PASS=${DB_PASSWD:-prestashop}
+      - DB_DUMP_BEGIN=+1
+      - DB_DUMP_FREQ=90
+    depends_on:
+      - mysql
+    volumes:
+      - ./backup:/backup
+    networks:
+      - local
+
+  maildev:
+    image: 'maildev/maildev'
+    container_name: maildev-${COMPOSE_PROJECT_NAME}
+    ports:
+      - "0:1080"
+    networks:
+      - local
+
+networks:
+  local:
+    external: true
