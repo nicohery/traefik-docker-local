@@ -1,0 +1,27 @@
+name: myproject
+
+services:
+  webserver:
+    build:
+      dockerfile: .docker/Dockerfile
+    image: docker-starterkit
+    container_name: kirbyserver-${COMPOSE_PROJECT_NAME}
+    ports: []
+    volumes:
+      - .:/var/www/html/:delegated
+    env_file:
+      - ./id.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`dev.${COMPOSE_PROJECT_NAME}.docker`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=web"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.rule=Host(`dev.${COMPOSE_PROJECT_NAME}.docker`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.entrypoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-secure.tls=true"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=80"
+    networks:
+      - local
+
+networks:
+  local:
+    external: true
