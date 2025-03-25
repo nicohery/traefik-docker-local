@@ -20,7 +20,7 @@ for dir in "$PROJECTS_DIR"/*/; do
     folder=$(basename "$dir")
 
     # Skip names with spaces or invalid characters
-    if [[ "$folder" =~ [^a-zA-Z] ]]; then
+    if [[ "$folder" =~ [^a-zA-Z0-9-] ]]; then
       echo "⚠️  Skipping invalid folder name: $folder"
       continue
     fi
